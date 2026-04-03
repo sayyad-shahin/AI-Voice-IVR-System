@@ -1,14 +1,19 @@
 let recognition
 
+let currentSpeaker=""
+
+const chat=document.getElementById("chat")
 const status=document.getElementById("status")
+const modal=document.getElementById("langModal")
 
-/* IVR Voice Message */
+/* AUTO IVR MENU */
 
-function speakIVR(){
+window.onload=function(){
 
-let message=
+modal.style.display="flex"
 
-"Welcome to AI Voice Customer Support. "+
+let speech=new SpeechSynthesisUtterance(
+
 "Select 1 for English. "+
 "Select 2 for Hindi. "+
 "Select 3 for Marathi. "+
@@ -18,25 +23,41 @@ let message=
 "Select 7 for Bengali. "+
 "Select 8 for Kannada."
 
-let speech=new SpeechSynthesisUtterance(message)
+)
 
 speech.rate=0.9
-speech.pitch=1
 
 speechSynthesis.speak(speech)
 
 }
 
-/* Run IVR on page load */
+/* POPUP LANGUAGE SELECT */
 
-window.onload=function(){
+function chooseLang(num){
 
-speakIVR()
+document.getElementById("language").value=num
+
+modal.style.display="none"
+
+status.innerText="● Language Selected"
 
 }
 
+/* KEYBOARD NUMBER SELECT */
 
-/* Speech Recognition */
+document.addEventListener("keydown",function(e){
+
+let n=parseInt(e.key)
+
+if(n>=1 && n<=8){
+
+chooseLang(n)
+
+}
+
+})
+
+/* SPEECH RECOGNITION */
 
 if('webkitSpeechRecognition' in window){
 
@@ -48,7 +69,6 @@ recognition.lang="en-US"
 recognition.onstart=function(){
 
 status.innerText="● Listening..."
-status.style.color="#22c55e"
 
 }
 
@@ -56,68 +76,98 @@ recognition.onresult=function(e){
 
 let text=e.results[0][0].transcript
 
-document.getElementById("input").value=text
+detectNumber(text)
+
+addMessage(currentSpeaker,text)
+
+sendToServer(text)
 
 }
 
-recognition.onend=function(){
+}
+
+/* VOICE NUMBER DETECTION */
+
+function detectNumber(text){
+
+let match=text.match(/[1-8]/)
+
+if(match){
+
+chooseLang(match[0])
+
+}
+
+}
+
+/* SPEAKER BUTTONS */
+
+function startFriend1(){
+
+currentSpeaker="friend1"
+
+recognition.start()
+
+}
+
+function startFriend2(){
+
+currentSpeaker="friend2"
+
+recognition.start()
+
+}
+
+/* ADD MESSAGE */
+
+function addMessage(type,text){
+
+let div=document.createElement("div")
+div.className="message "+type
+
+let bubble=document.createElement("div")
+bubble.className="bubble"
+bubble.innerText=text
+
+div.appendChild(bubble)
+
+chat.appendChild(div)
+
+chat.scrollTop=chat.scrollHeight
+
+}
+
+/* ADD TRANSLATION */
+
+function addTranslation(text){
+
+let div=document.createElement("div")
+
+div.className="translation"
+
+div.innerText="Translated: "+text
+
+chat.appendChild(div)
+
+chat.scrollTop=chat.scrollHeight
+
+}
+
+/* BACKEND REQUEST */
+
+async function sendToServer(text){
 
 status.innerText="● Processing..."
-status.style.color="orange"
 
-}
-
-}
-
-
-/* Start listening on input click */
-
-document.getElementById("input").onclick=function(){
-
-if(recognition) recognition.start()
-
-}
-
-
-/* Send to backend */
-
-async function send(){
-
-status.innerText="● Processing..."
-status.style.color="orange"
-
-let text=document.getElementById("input").value
-
-if(!text){
-
-status.innerText="● Speak something first"
-status.style.color="red"
-
-return
-}
-
-/* Language Selection */
-
-let option=prompt(
-
-"Select language:\n\n"+
-"1 English\n"+
-"2 Hindi\n"+
-"3 Marathi\n"+
-"4 Tamil\n"+
-"5 Telugu\n"+
-"6 Gujarati\n"+
-"7 Bengali\n"+
-"8 Kannada"
-
-)
-
-try{
+let option=document.getElementById("language").value
 
 let res=await fetch("http://127.0.0.1:5000/voice",{
 
 method:"POST",
-headers:{"Content-Type":"application/json"},
+
+headers:{
+"Content-Type":"application/json"
+},
 
 body:JSON.stringify({
 text:text,
@@ -128,35 +178,12 @@ option:option
 
 let data=await res.json()
 
-if(data.error){
-
-status.innerText="● Error generating output"
-status.style.color="red"
-return
-
-}
-
-/* Show response */
-
-document.getElementById("response").innerText=data.rephrased
-
-/* Play AI voice */
+addTranslation(data.rephrased)
 
 let audio=new Audio(data.audio)
 
 audio.play()
 
-status.innerText="● Output Ready"
-status.style.color="#22c55e"
-
-}
-catch(err){
-
-console.log(err)
-
-status.innerText="● Server Error"
-status.style.color="red"
-
-}
+status.innerText="● Ready"
 
 }

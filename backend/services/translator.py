@@ -1,17 +1,21 @@
 from deep_translator import GoogleTranslator
 from langdetect import detect
 
-def translate_text(text,target):
+def translate_text(text, target):
 
     try:
-        source=detect(text)
 
-        translated=GoogleTranslator(
+        source = detect(text)
+
+        translated = GoogleTranslator(
             source=source,
             target=target
         ).translate(text)
 
         return translated
 
-    except:
+    except Exception as e:
+
+        print("Translation Error:", e)
+
         return text

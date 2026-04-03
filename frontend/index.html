@@ -1,39 +1,100 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
-<title>AI Voice IVR</title>
+<title>AI Conversation Translator</title>
 
 <link rel="stylesheet" href="style.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 </head>
 
 <body>
 
-<div class="app">
+<header class="header">
 
-<div class="header">
-
-<div class="logo">AI Voice IVR</div>
-
-<div class="status" id="status">● Listening Ready</div>
-
+<div class="logo">
+AI Conversation Translator
 </div>
 
+<div class="status" id="status">
+● Ready
+</div>
 
-<div class="center">
+</header>
+
+<main class="main">
+
+<div class="assistant">
 
 <div class="orb"></div>
 
-<h1>Customer Voice Support</h1>
+<p class="subtitle">
+Real-time multilingual voice conversation
+</p>
 
-<p>Tap input and speak your request</p>
+<div class="language-bar">
 
-<input id="input" placeholder="Tap and start speaking"/>
+<label>Translate To:</label>
 
-<button onclick="send()">Send Voice Request</button>
+<select id="language">
 
-<div id="response"></div>
+<option value="1">English</option>
+<option value="2">Hindi</option>
+<option value="3">Marathi</option>
+<option value="4">Tamil</option>
+<option value="5">Telugu</option>
+<option value="6">Gujarati</option>
+<option value="7">Bengali</option>
+<option value="8">Kannada</option>
+
+</select>
+
+</div>
+
+<div class="chat" id="chat"></div>
+
+<div class="controls">
+
+<button class="btn friend1" onclick="startFriend1()">
+Friend 1 Speak
+</button>
+
+<button class="btn friend2" onclick="startFriend2()">
+Friend 2 Speak
+</button>
+
+</div>
+
+</div>
+
+</main>
+
+
+<!-- PROFESSIONAL LANGUAGE POPUP -->
+
+<div id="langModal" class="modal">
+
+<div class="modal-content">
+
+<h3>Select Translation Language</h3>
+
+<p>Press number or click option</p>
+
+<div class="lang-grid">
+
+<button onclick="chooseLang(1)">1 English</button>
+<button onclick="chooseLang(2)">2 Hindi</button>
+<button onclick="chooseLang(3)">3 Marathi</button>
+<button onclick="chooseLang(4)">4 Tamil</button>
+<button onclick="chooseLang(5)">5 Telugu</button>
+<button onclick="chooseLang(6)">6 Gujarati</button>
+<button onclick="chooseLang(7)">7 Bengali</button>
+<button onclick="chooseLang(8)">8 Kannada</button>
+
+</div>
 
 </div>
 

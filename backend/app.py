@@ -1,52 +1,87 @@
-from flask import Flask,request,jsonify,send_file
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
+import os
 
 from services.translator import translate_text
 from services.rephrase import rephrase_text
 from services.tts import generate_voice
 
-app=Flask(__name__)
+app = Flask(__name__)
 CORS(app)
 
-LANGUAGES={
-"1":"en",
-"2":"hi",
-"3":"mr",
-"4":"ta",
-"5":"te",
-"6":"gu",
-"7":"bn",
-"8":"kn"
+LANGUAGES = {
+    "1": "en",
+    "2": "hi",
+    "3": "mr",
+    "4": "ta",
+    "5": "te",
+    "6": "gu",
+    "7": "bn",
+    "8": "kn"
 }
 
-@app.route("/voice",methods=["POST"])
+
+@app.route("/voice", methods=["POST"])
 def voice():
 
-    data=request.json
+    try:
 
-    text=data["text"]
-    option=data["option"]
+        data = request.json
 
-    lang=LANGUAGES.get(option,"en")
+        if not data:
+            return jsonify({"error": "No input data"}), 400
 
-    translated=translate_text(text,lang)
+        text = data.get("text", "")
+        option = str(data.get("option", "1"))
 
-    improved=rephrase_text(translated)
+        if text.strip() == "":
+            return jsonify({"error": "Empty input"}), 400
 
-    audio_file=generate_voice(improved)
+        lang = LANGUAGES.get(option, "en")
 
-    if not audio_file:
-        return jsonify({"error":"Audio generation failed"}),500
+        # Translation
+        translated = translate_text(text, lang)
 
-    return jsonify({
-        "translated":translated,
-        "rephrased":improved,
-        "audio":f"http://127.0.0.1:5000/audio/{audio_file}"
-    })
+        # Rephrase
+        improved = rephrase_text(translated)
+
+        # Text to speech
+        audio_file = generate_voice(improved)
+
+        if not audio_file:
+            return jsonify({
+                "translated": translated,
+                "rephrased": improved,
+                "audio": ""
+            })
+
+        return jsonify({
+            "translated": translated,
+            "rephrased": improved,
+            "audio": f"http://127.0.0.1:5000/audio/{audio_file}"
+        })
+
+    except Exception as e:
+
+        print("SERVER ERROR:", e)
+
+        return jsonify({
+            "error": "Server failed",
+            "rephrased": "System error occurred",
+            "audio": ""
+        }), 500
+
 
 @app.route("/audio/<file>")
 def audio(file):
-    return send_file("audio/"+file)
 
-if __name__=="__main__":
+    path = os.path.join("audio", file)
+
+    if not os.path.exists(path):
+        return jsonify({"error": "Audio not found"}), 404
+
+    return send_file(path, mimetype="audio/mpeg")
+
+
+if __name__ == "__main__":
     app.run(debug=True)
