@@ -1,6 +1,6 @@
 from deep_translator import GoogleTranslator
 
-def translate_text(text, target_lang):
+def translate_text(text, target):
 
     try:
 
@@ -9,7 +9,7 @@ def translate_text(text, target_lang):
 
         translated = GoogleTranslator(
             source="auto",
-            target=target_lang
+            target=target
         ).translate(text)
 
         return translated
