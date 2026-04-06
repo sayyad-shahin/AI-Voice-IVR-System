@@ -9,10 +9,9 @@ from services.tts import generate_voice
 app = Flask(__name__)
 CORS(app)
 
-# CREATE AUDIO FOLDER IF NOT EXISTS
+# CREATE AUDIO FOLDER
 os.makedirs("audio", exist_ok=True)
 
-# LANGUAGE OPTIONS
 LANGUAGES = {
     "1": "en",
     "2": "hi",
@@ -30,13 +29,14 @@ LANGUAGES = {
 def login():
 
     try:
+
         data = request.json
 
         username = data.get("username")
         password = data.get("password")
 
-        # Simple login validation
         if username and password:
+
             return jsonify({
                 "success": True,
                 "name": username
@@ -45,7 +45,9 @@ def login():
         return jsonify({"success": False})
 
     except Exception as e:
+
         print("Login Error:", e)
+
         return jsonify({"success": False})
 
 
@@ -87,7 +89,7 @@ def voice():
         audio_url = ""
 
         if audio_file:
-            audio_url = f"/audio/{audio_file}"
+            audio_url = request.host_url + "audio/" + audio_file
 
         return jsonify({
             "translated": translated,
@@ -126,7 +128,7 @@ def audio(file):
         return jsonify({"error": "Audio failed"}), 500
 
 
-# HEALTH CHECK (IMPORTANT FOR HOSTING)
+# HEALTH CHECK
 @app.route("/")
 def home():
     return "AI Voice IVR System Running"

@@ -2,14 +2,12 @@ let recognition
 let username=""
 let currentSpeaker=""
 
-/* BACKEND URL */
 const API_URL="https://ai-voice-ivr-system-5.onrender.com"
 
 const chat=document.getElementById("chat")
 const status=document.getElementById("status")
 const modal=document.getElementById("langModal")
 
-/* SHOW LOGIN PAGE */
 
 function showLogin(){
 
@@ -18,7 +16,6 @@ document.getElementById("loginPage").style.display="flex"
 
 }
 
-/* LOGIN */
 
 async function login(){
 
@@ -76,7 +73,6 @@ alert("Backend connection failed")
 
 }
 
-/* LANGUAGE MENU */
 
 function openLanguageMenu(){
 
@@ -101,7 +97,6 @@ speechSynthesis.speak(speech)
 
 }
 
-/* SELECT LANGUAGE */
 
 function chooseLang(num){
 
@@ -113,7 +108,6 @@ status.innerText="● Language Selected"
 
 }
 
-/* SPEECH RECOGNITION */
 
 if('webkitSpeechRecognition' in window){
 
@@ -152,7 +146,6 @@ status.innerText="● Ready"
 
 }
 
-/* FRIEND BUTTONS */
 
 function startFriend1(){
 
@@ -174,7 +167,6 @@ recognition.start()
 
 }
 
-/* ADD MESSAGE */
 
 function addMessage(type,text){
 
@@ -193,7 +185,6 @@ chat.scrollTop=chat.scrollHeight
 
 }
 
-/* ADD TRANSLATION */
 
 function addTranslation(text){
 
@@ -212,7 +203,6 @@ chat.scrollTop=chat.scrollHeight
 
 }
 
-/* SEND TEXT TO BACKEND */
 
 async function sendToServer(text){
 
@@ -239,13 +229,10 @@ option:option
 
 let data=await res.json()
 
-/* SAFE TRANSLATION */
-
 let translatedText = data.rephrased || data.translated || text
 
 addTranslation(translatedText)
 
-/* PLAY AUDIO */
 
 if(data.audio){
 
