@@ -13,6 +13,54 @@
 
 <body>
 
+<!-- WELCOME PAGE -->
+
+<div id="welcomePage" class="welcome">
+
+<div class="welcome-card">
+
+<h1>AI Conversation Translator</h1>
+
+<p class="welcome-sub">
+Real-time multilingual voice assistant powered by AI
+</p>
+
+<button class="start-btn" onclick="showLogin()">
+Get Started
+</button>
+
+</div>
+
+</div>
+
+
+<!-- LOGIN PAGE -->
+
+<div id="loginPage" class="login">
+
+<div class="login-card">
+
+<h2>User Authentication</h2>
+
+<p class="login-sub">
+Login to start voice translation
+</p>
+
+<input id="username" placeholder="Username">
+
+<input id="password" type="password" placeholder="Password">
+
+<button onclick="login()">Login</button>
+
+</div>
+
+</div>
+
+
+<!-- MAIN APPLICATION -->
+
+<div id="appUI">
+
 <header class="header">
 
 <div class="logo">
@@ -58,6 +106,12 @@ Real-time multilingual voice conversation
 
 <div class="controls">
 
+<input
+id="voiceBox"
+placeholder="Tap here to start conversation"
+onclick="openLanguageMenu()"
+/>
+<div>
 <button class="btn friend1" onclick="startFriend1()">
 Friend 1 Speak
 </button>
@@ -65,15 +119,17 @@ Friend 1 Speak
 <button class="btn friend2" onclick="startFriend2()">
 Friend 2 Speak
 </button>
-
+</div>
 </div>
 
 </div>
 
 </main>
 
+</div>
 
-<!-- PROFESSIONAL LANGUAGE POPUP -->
+
+<!-- LANGUAGE POPUP -->
 
 <div id="langModal" class="modal">
 

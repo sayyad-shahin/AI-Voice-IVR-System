@@ -1,27 +1,96 @@
 let recognition
-
+let username=""
 let currentSpeaker=""
 
 const chat=document.getElementById("chat")
 const status=document.getElementById("status")
 const modal=document.getElementById("langModal")
 
-/* AUTO IVR MENU */
+/* SHOW LOGIN PAGE */
 
-window.onload=function(){
+function showLogin(){
+
+document.getElementById("welcomePage").style.display="none"
+document.getElementById("loginPage").style.display="flex"
+
+}
+
+/* LOGIN */
+
+async function login(){
+
+let user=document.getElementById("username").value
+let pass=document.getElementById("password").value
+
+if(!user || !pass){
+
+alert("Enter username and password")
+return
+
+}
+
+try{
+
+let res=await fetch("http://127.0.0.1:5000/login",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+username:user,
+password:pass
+})
+
+})
+
+let data=await res.json()
+
+if(data.success){
+
+username=data.name
+
+document.getElementById("loginPage").style.display="none"
+
+document.getElementById("appUI").style.display="block"
+
+status.innerText="● Logged in as "+username
+
+}else{
+
+alert("Invalid Login")
+
+}
+
+}catch(error){
+
+console.error("Login error:",error)
+
+alert("Backend not running")
+
+}
+
+}
+
+/* LANGUAGE MENU */
+
+function openLanguageMenu(){
 
 modal.style.display="flex"
 
 let speech=new SpeechSynthesisUtterance(
 
-"Select 1 for English. "+
-"Select 2 for Hindi. "+
-"Select 3 for Marathi. "+
-"Select 4 for Tamil. "+
-"Select 5 for Telugu. "+
-"Select 6 for Gujarati. "+
-"Select 7 for Bengali. "+
-"Select 8 for Kannada."
+username+" please select "+
+"1 for English "+
+"2 for Hindi "+
+"3 for Marathi "+
+"4 for Tamil "+
+"5 for Telugu "+
+"6 for Gujarati "+
+"7 for Bengali "+
+"8 for Kannada"
 
 )
 
@@ -31,7 +100,7 @@ speechSynthesis.speak(speech)
 
 }
 
-/* POPUP LANGUAGE SELECT */
+/* SELECT LANGUAGE */
 
 function chooseLang(num){
 
@@ -43,27 +112,12 @@ status.innerText="● Language Selected"
 
 }
 
-/* KEYBOARD NUMBER SELECT */
-
-document.addEventListener("keydown",function(e){
-
-let n=parseInt(e.key)
-
-if(n>=1 && n<=8){
-
-chooseLang(n)
-
-}
-
-})
-
 /* SPEECH RECOGNITION */
 
 if('webkitSpeechRecognition' in window){
 
 recognition=new webkitSpeechRecognition()
 
-recognition.continuous=false
 recognition.lang="en-US"
 
 recognition.onstart=function(){
@@ -76,37 +130,35 @@ recognition.onresult=function(e){
 
 let text=e.results[0][0].transcript
 
-detectNumber(text)
-
 addMessage(currentSpeaker,text)
 
 sendToServer(text)
 
 }
 
-}
+recognition.onerror=function(){
 
-/* VOICE NUMBER DETECTION */
-
-function detectNumber(text){
-
-let match=text.match(/[1-8]/)
-
-if(match){
-
-chooseLang(match[0])
+status.innerText="● Ready"
 
 }
 
+recognition.onend=function(){
+
+status.innerText="● Ready"
+
 }
 
-/* SPEAKER BUTTONS */
+}
+
+/* FRIEND BUTTONS */
 
 function startFriend1(){
 
 currentSpeaker="friend1"
 
+if(recognition){
 recognition.start()
+}
 
 }
 
@@ -114,7 +166,9 @@ function startFriend2(){
 
 currentSpeaker="friend2"
 
+if(recognition){
 recognition.start()
+}
 
 }
 
@@ -142,8 +196,11 @@ chat.scrollTop=chat.scrollHeight
 function addTranslation(text){
 
 let div=document.createElement("div")
-
 div.className="translation"
+
+if(!text || text==="undefined"){
+text="Translation unavailable"
+}
 
 div.innerText="Translated: "+text
 
@@ -153,9 +210,11 @@ chat.scrollTop=chat.scrollHeight
 
 }
 
-/* BACKEND REQUEST */
+/* SEND TEXT TO BACKEND */
 
 async function sendToServer(text){
+
+try{
 
 status.innerText="● Processing..."
 
@@ -178,12 +237,41 @@ option:option
 
 let data=await res.json()
 
-addTranslation(data.rephrased)
+/* SAFE TRANSLATION */
+
+let translatedText = data.rephrased || data.translated || text
+
+addTranslation(translatedText)
+
+/* PLAY AUDIO SAFELY */
+
+if(data.audio){
 
 let audio=new Audio(data.audio)
 
-audio.play()
+audio.onended=function(){
 
 status.innerText="● Ready"
 
 }
+
+audio.play()
+
+}else{
+
+status.innerText="● Ready"
+
+}
+
+}catch(err){
+
+console.error("Server error:",err)
+
+addTranslation("System error occurred")
+
+status.innerText="● Ready"
+
+}
+
+}
+

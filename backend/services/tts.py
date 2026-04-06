@@ -2,7 +2,7 @@ import requests
 import uuid
 import os
 
-API_KEY = "sk_45c58063e5e0f9329e4b84043e4376da9ffe0b7b10fe204e"   
+API_KEY = "sk_45c58063e5e0f9329e4b84043e4376da9ffe0b7b10fe204e"
 
 VOICE_ID = "EXAVITQu4vr4xnSDxMaL"
 
@@ -11,8 +11,8 @@ def generate_voice(text):
 
     try:
 
-        if text.strip() == "":
-            return None
+        if not text:
+            return ""
 
         url = f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}"
 
@@ -29,14 +29,12 @@ def generate_voice(text):
         response = requests.post(url, json=payload, headers=headers)
 
         if response.status_code != 200:
-
-            print("ElevenLabs Error:", response.text)
-            return None
+            print("TTS Error:", response.text)
+            return ""
 
         os.makedirs("audio", exist_ok=True)
 
         filename = f"{uuid.uuid4().hex}.mp3"
-
         path = os.path.join("audio", filename)
 
         with open(path, "wb") as f:
@@ -47,4 +45,5 @@ def generate_voice(text):
     except Exception as e:
 
         print("TTS ERROR:", e)
-        return None
+
+        return ""
