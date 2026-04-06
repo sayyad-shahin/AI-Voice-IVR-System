@@ -2,6 +2,9 @@ let recognition
 let username=""
 let currentSpeaker=""
 
+/* BACKEND URL */
+const API_URL="https://ai-voice-ivr-system-5.onrender.com"
+
 const chat=document.getElementById("chat")
 const status=document.getElementById("status")
 const modal=document.getElementById("langModal")
@@ -31,7 +34,7 @@ return
 
 try{
 
-let res=await fetch("http://127.0.0.1:5000/login",{
+let res=await fetch(API_URL+"/login",{
 
 method:"POST",
 
@@ -53,7 +56,6 @@ if(data.success){
 username=data.name
 
 document.getElementById("loginPage").style.display="none"
-
 document.getElementById("appUI").style.display="block"
 
 status.innerText="● Logged in as "+username
@@ -68,7 +70,7 @@ alert("Invalid Login")
 
 console.error("Login error:",error)
 
-alert("Backend not running")
+alert("Backend connection failed")
 
 }
 
@@ -95,7 +97,6 @@ username+" please select "+
 )
 
 speech.rate=0.9
-
 speechSynthesis.speak(speech)
 
 }
@@ -118,6 +119,7 @@ if('webkitSpeechRecognition' in window){
 
 recognition=new webkitSpeechRecognition()
 
+recognition.continuous=false
 recognition.lang="en-US"
 
 recognition.onstart=function(){
@@ -220,7 +222,7 @@ status.innerText="● Processing..."
 
 let option=document.getElementById("language").value
 
-let res=await fetch("http://127.0.0.1:5000/voice",{
+let res=await fetch(API_URL+"/voice",{
 
 method:"POST",
 
@@ -243,16 +245,14 @@ let translatedText = data.rephrased || data.translated || text
 
 addTranslation(translatedText)
 
-/* PLAY AUDIO SAFELY */
+/* PLAY AUDIO */
 
 if(data.audio){
 
 let audio=new Audio(data.audio)
 
 audio.onended=function(){
-
 status.innerText="● Ready"
-
 }
 
 audio.play()
@@ -274,4 +274,3 @@ status.innerText="● Ready"
 }
 
 }
-
