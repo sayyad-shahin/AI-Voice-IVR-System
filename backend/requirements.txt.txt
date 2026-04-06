@@ -1,5 +1,0 @@
-Flask
-flask-cors
-requests
-deep-translator
-langdetect
