@@ -24,7 +24,7 @@ document.getElementById("loginBtn").onclick=async function(){
 username=document.getElementById("username").value
 let password=document.getElementById("password").value
 
-let res=await fetch("http://127.0.0.1:5000/login",{
+let res=await fetch("https://ai-voice-ivr-system-7.onrender.com/login",{
 
 method:"POST",
 headers:{"Content-Type":"application/json"},
@@ -162,7 +162,7 @@ status.innerText="● Processing..."
 
 let option=document.getElementById("language").value
 
-let res=await fetch("http://127.0.0.1:5000/voice",{
+let res=await fetch("https://ai-voice-ivr-system-7.onrender.com/voice",{
 
 method:"POST",
 headers:{"Content-Type":"application/json"},
