@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask,request,jsonify,send_file
 from flask_cors import CORS
 import os
 
@@ -6,97 +6,76 @@ from services.translator import translate_text
 from services.rephrase import rephrase_text
 from services.tts import generate_voice
 
-app = Flask(__name__)
+app=Flask(__name__)
 CORS(app)
 
-os.makedirs("audio", exist_ok=True)
-
-LANGUAGES = {
-    "1": "en",
-    "2": "hi",
-    "3": "mr",
-    "4": "ta",
-    "5": "te",
-    "6": "gu",
-    "7": "bn",
-    "8": "kn"
+LANGUAGES={
+"1":"en",
+"2":"hi",
+"3":"mr",
+"4":"ta",
+"5":"te",
+"6":"gu",
+"7":"bn",
+"8":"kn"
 }
 
-
-@app.route("/login", methods=["POST"])
+@app.route("/login",methods=["POST"])
 def login():
 
-    data = request.json
-    username = data.get("username")
-    password = data.get("password")
+    data=request.json
+
+    username=data.get("username")
+    password=data.get("password")
 
     if username and password:
+
         return jsonify({
-            "success": True,
-            "name": username
+        "success":True,
+        "name":username
         })
 
-    return jsonify({"success": False})
+    return jsonify({"success":False})
 
-
-@app.route("/voice", methods=["POST"])
+@app.route("/voice",methods=["POST"])
 def voice():
 
-    try:
+    data=request.json
 
-        data = request.json
+    text=data.get("text","")
+    option=str(data.get("option","1"))
 
-        text = data.get("text", "")
-        option = str(data.get("option", "1"))
+    lang=LANGUAGES.get(option,"en")
 
-        lang = LANGUAGES.get(option, "en")
+    translated=translate_text(text,lang)
 
-        print("User text:", text)
-        print("Target language:", lang)
+    improved=rephrase_text(translated)
 
-        translated = translate_text(text, lang)
+    audio_file=generate_voice(improved)
 
-        improved = rephrase_text(translated)
+    audio_url=""
 
-        audio_file = generate_voice(improved, lang)
+    if audio_file:
 
-        audio_url = ""
+        audio_url=f"http://127.0.0.1:5000/audio/{audio_file}"
 
-        if audio_file:
-            audio_url = request.host_url + "audio/" + audio_file
+    return jsonify({
 
-        return jsonify({
-            "translated": translated,
-            "rephrased": improved,
-            "audio": audio_url
-        })
+    "translated":translated,
+    "rephrased":improved,
+    "audio":audio_url
 
-    except Exception as e:
-
-        print("SERVER ERROR:", e)
-
-        return jsonify({
-            "translated": text,
-            "rephrased": text,
-            "audio": ""
-        })
-
+    })
 
 @app.route("/audio/<file>")
 def audio(file):
 
-    path = os.path.join("audio", file)
+    path=os.path.join("audio",file)
 
-    return send_file(path, mimetype="audio/mpeg")
+    return send_file(path,mimetype="audio/mpeg")
 
+if __name__=="__main__":
 
-@app.route("/")
-def home():
-    return "AI Voice IVR System Running"
+    os.makedirs("audio",exist_ok=True)
 
-
-if __name__ == "__main__":
-
-    port = int(os.environ.get("PORT", 5000))
-
-    app.run(host="0.0.0.0", port=port)
+    app.run(debug=True)

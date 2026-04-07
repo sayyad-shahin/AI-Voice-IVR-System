@@ -1,32 +1,44 @@
-from gtts import gTTS
+import requests
 import uuid
 import os
 
-AUDIO_FOLDER = "audio"
+API_KEY="sk_777f15c4383559da769d79dd43377c2cb14bbfcc9c47cff0"
 
+VOICE_ID="EXAVITQu4vr4xnSDxMaL"
 
-def generate_voice(text, lang):
+def generate_voice(text):
 
-    try:
+    url=f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}"
 
-        if not text:
-            return None
+    headers={
 
-        filename = str(uuid.uuid4()) + ".mp3"
+    "xi-api-key":API_KEY,
+    "Content-Type":"application/json"
 
-        filepath = os.path.join(AUDIO_FOLDER, filename)
+    }
 
-        tts = gTTS(
-            text=text,
-            lang=lang
-        )
+    payload={
 
-        tts.save(filepath)
+    "text":text,
+    "model_id":"eleven_multilingual_v2"
 
-        return filename
+    }
 
-    except Exception as e:
+    response=requests.post(url,json=payload,headers=headers)
 
-        print("TTS Error:", e)
+    if response.status_code!=200:
 
-        return None
+        print(response.text)
+        return ""
+
+    os.makedirs("audio",exist_ok=True)
+
+    filename=f"{uuid.uuid4().hex}.mp3"
+
+    path=os.path.join("audio",filename)
+
+    with open(path,"wb") as f:
+
+        f.write(response.content)
+
+    return filename

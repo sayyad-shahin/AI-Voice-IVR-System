@@ -1,48 +1,34 @@
 let recognition
-let username=""
 let currentSpeaker=""
-
-const API_URL="https://ai-voice-ivr-system-5.onrender.com"
+let currentAudio=null
 
 const chat=document.getElementById("chat")
 const status=document.getElementById("status")
 const modal=document.getElementById("langModal")
 
+let username=""
 
-function showLogin(){
+/* PAGE NAVIGATION */
+
+document.getElementById("startBtn").onclick=function(){
 
 document.getElementById("welcomePage").style.display="none"
 document.getElementById("loginPage").style.display="flex"
 
 }
 
+/* LOGIN */
 
-async function login(){
+document.getElementById("loginBtn").onclick=async function(){
 
-let user=document.getElementById("username").value
-let pass=document.getElementById("password").value
+username=document.getElementById("username").value
+let password=document.getElementById("password").value
 
-if(!user || !pass){
-
-alert("Enter username and password")
-return
-
-}
-
-try{
-
-let res=await fetch(API_URL+"/login",{
+let res=await fetch("http://127.0.0.1:5000/login",{
 
 method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-username:user,
-password:pass
-})
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({username,password})
 
 })
 
@@ -50,45 +36,35 @@ let data=await res.json()
 
 if(data.success){
 
-username=data.name
+localStorage.setItem("username",username)
 
 document.getElementById("loginPage").style.display="none"
-document.getElementById("appUI").style.display="block"
-
-status.innerText="● Logged in as "+username
+document.getElementById("appPage").style.display="block"
 
 }else{
 
-alert("Invalid Login")
-
-}
-
-}catch(error){
-
-console.error("Login error:",error)
-
-alert("Backend connection failed")
+alert("Login failed")
 
 }
 
 }
 
+/* LANGUAGE POPUP */
 
-function openLanguageMenu(){
+document.getElementById("voiceBox").onclick=function(){
 
 modal.style.display="flex"
 
 let speech=new SpeechSynthesisUtterance(
 
-username+" please select "+
-"1 for English "+
-"2 for Hindi "+
-"3 for Marathi "+
-"4 for Tamil "+
-"5 for Telugu "+
-"6 for Gujarati "+
-"7 for Bengali "+
-"8 for Kannada"
+username+" select 1 for English. "+
+"Select 2 for Hindi. "+
+"Select 3 for Marathi. "+
+"Select 4 for Tamil. "+
+"Select 5 for Telugu. "+
+"Select 6 for Gujarati. "+
+"Select 7 for Bengali. "+
+"Select 8 for Kannada."
 
 )
 
@@ -97,34 +73,29 @@ speechSynthesis.speak(speech)
 
 }
 
-
 function chooseLang(num){
 
 document.getElementById("language").value=num
-
 modal.style.display="none"
-
 status.innerText="● Language Selected"
 
 }
 
+/* SPEECH */
 
-if('webkitSpeechRecognition' in window){
+if("webkitSpeechRecognition" in window){
 
 recognition=new webkitSpeechRecognition()
-
 recognition.continuous=false
 recognition.lang="en-US"
 
 recognition.onstart=function(){
-
 status.innerText="● Listening..."
-
 }
 
-recognition.onresult=function(e){
+recognition.onresult=function(event){
 
-let text=e.results[0][0].transcript
+let text=event.results[0][0].transcript
 
 addMessage(currentSpeaker,text)
 
@@ -132,41 +103,29 @@ sendToServer(text)
 
 }
 
-recognition.onerror=function(){
-
-status.innerText="● Ready"
-
-}
-
 recognition.onend=function(){
-
 status.innerText="● Ready"
-
 }
 
 }
 
+/* BUTTONS */
 
-function startFriend1(){
+document.getElementById("friend1").onclick=function(){
 
 currentSpeaker="friend1"
-
-if(recognition){
 recognition.start()
-}
 
 }
 
-function startFriend2(){
+document.getElementById("friend2").onclick=function(){
 
 currentSpeaker="friend2"
-
-if(recognition){
 recognition.start()
-}
 
 }
 
+/* CHAT */
 
 function addMessage(type,text){
 
@@ -185,79 +144,52 @@ chat.scrollTop=chat.scrollHeight
 
 }
 
-
 function addTranslation(text){
 
 let div=document.createElement("div")
 div.className="translation"
-
-if(!text || text==="undefined"){
-text="Translation unavailable"
-}
-
 div.innerText="Translated: "+text
 
 chat.appendChild(div)
 
-chat.scrollTop=chat.scrollHeight
-
 }
 
+/* SERVER */
 
 async function sendToServer(text){
-
-try{
 
 status.innerText="● Processing..."
 
 let option=document.getElementById("language").value
 
-let res=await fetch(API_URL+"/voice",{
+let res=await fetch("http://127.0.0.1:5000/voice",{
 
 method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-text:text,
-option:option
-})
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({text,option})
 
 })
 
 let data=await res.json()
 
-let translatedText = data.rephrased || data.translated || text
+let translated=data.rephrased || data.translated || text
 
-addTranslation(translatedText)
+addTranslation(translated)
 
+if(currentAudio){
+
+currentAudio.pause()
+currentAudio.currentTime=0
+
+}
 
 if(data.audio){
 
-let audio=new Audio(data.audio)
-
-audio.onended=function(){
-status.innerText="● Ready"
-}
-
-audio.play()
-
-}else{
-
-status.innerText="● Ready"
+currentAudio=new Audio(data.audio)
+currentAudio.play().catch(()=>{})
 
 }
 
-}catch(err){
-
-console.error("Server error:",err)
-
-addTranslation("System error occurred")
-
 status.innerText="● Ready"
-
-}
 
 }
